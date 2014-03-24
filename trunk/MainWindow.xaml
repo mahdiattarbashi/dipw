@@ -1,0 +1,98 @@
+﻿<Window
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit" x:Class="DipW.MainWindow"
+        TextOptions.TextFormattingMode="Display"
+        TextOptions.TextRenderingMode="ClearType"
+        UseLayoutRounding="true"
+        Title="MainWindow" Height="478" Width="865">
+    <Grid>
+        <GroupBox Header="Interface-Selection" VerticalAlignment="Top" Margin="10,10,0,0" Height="46" HorizontalAlignment="Left" Width="537">
+            <Grid>
+                <ComboBox x:Name="cbxNetworkInterface" Margin="0,0,0,0"/>
+            </Grid>
+        </GroupBox>
+        <TabControl Margin="552,-1,-1,-1" TabStripPlacement="Left">
+            <TabControl.ItemContainerStyle>
+                <Style TargetType="{x:Type TabItem}">
+                    <Setter Property="LayoutTransform">
+                        <Setter.Value>
+                            <RotateTransform Angle="270"/>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </TabControl.ItemContainerStyle>
+            <TabItem Header="Statistics">
+                <Grid>
+                    <GroupBox Header="Incomming Packet-Count" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Height="130" Width="254">
+                        <Grid>
+                            <Label Content="TCP-Packets:" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="81"/>
+                            <TextBox x:Name="tbxTcpPacketCount" HorizontalAlignment="Left" IsReadOnly="True" Height="23" Margin="96,13,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
+
+                            <Label Content="UDP-Packets:" HorizontalAlignment="Left" Margin="10,41,0,0" VerticalAlignment="Top" Width="81"/>
+                            <TextBox x:Name="tbxUdpPacketCount" HorizontalAlignment="Left" IsReadOnly="True" Height="23" Margin="96,44,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
+
+                            <Label Content="DNS-Packets:" HorizontalAlignment="Left" Margin="10,72,0,0" VerticalAlignment="Top"/>
+                            <TextBox x:Name="tbxDnsPacketCount" HorizontalAlignment="Left" IsReadOnly="True" Height="23" Margin="96,72,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
+                        </Grid>
+                    </GroupBox>
+                </Grid>
+            </TabItem>
+            <TabItem Header="DoS-Tools">
+                <Grid>
+                    <GroupBox x:Name="gbxCAMflood" Header="CAM-Overflow" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Height="130" Width="254">
+                        <Grid>
+                            <Label Content="Entries:" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" ToolTip="The amount of MAC/IP addresses to be generated to fill the CAM-Table. Must be bigger than the CAM-Table of the switch"/>
+                            <Button x:Name="btnCAMflood" Content="Flood" HorizontalAlignment="Left" Margin="157,58,0,0" VerticalAlignment="Top" Width="75" Click="btnCAMflood_Click"/>
+                            <TextBox x:Name="tbxCAMentries" HorizontalAlignment="Left" Height="23" Margin="63,12,0,0" TextWrapping="Wrap" Text="7000" VerticalAlignment="Top" Width="120"/>
+                        </Grid>
+                    </GroupBox>
+                </Grid>
+            </TabItem>
+            <TabItem Header="MitM-Tools">
+                <Grid>
+                    <GroupBox x:Name="gbxARPPoison" Header="ARP-Poisoning" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Height="130" Width="254">
+                        <Grid>
+                            <Button x:Name="btnAddARPTarget" IsEnabled="False" Content="Add Target" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="92" Click="btnAddARPTarget_Click"/>
+                            <Button x:Name="btnRemoveARPTarget" IsEnabled="false" Content="Remove Target" HorizontalAlignment="Left" Margin="10,36,0,0" VerticalAlignment="Top" Width="92" Click="btnRemoveARPTarget_Click"/>
+                            <Button x:Name="btnARPpoison" Content="Poison" HorizontalAlignment="Left" Margin="113,77,0,0" VerticalAlignment="Top" Width="98" Click="btnARPpoison_Click"/>
+                        </Grid>
+                    </GroupBox>
+                </Grid>
+            </TabItem>
+        </TabControl>
+        <Button x:Name="btnStartScan" Content="scan network" HorizontalAlignment="Left" Margin="10,80,0,0" VerticalAlignment="Top" Width="84" Click="btnStartScan_Click"/>
+        <ListView x:Name="lvwTargets" HorizontalAlignment="Left" Height="183" Margin="10,165,0,0" VerticalAlignment="Top" Width="537" SelectionChanged="lvwTargets_SelectionChanged">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="IPv4 address" Width="90" DisplayMemberBinding="{Binding IP}"/>
+                    <GridViewColumn Header="MAC" Width="105" DisplayMemberBinding="{Binding MAC}"/>
+                    <GridViewColumn Header="Vendor (OUI)" Width="200" DisplayMemberBinding="{Binding Vendor}"/>
+                    <GridViewColumn Header="ARP-Poisoning" Width="100" DisplayMemberBinding="{Binding ArpPoisoning}"/>
+                </GridView>
+            </ListView.View>
+        </ListView>
+        <Label Content="Targetlist" HorizontalAlignment="Left" Margin="10,135,0,0" VerticalAlignment="Top"/>
+        <Label Content="Gateway" HorizontalAlignment="Left" Margin="10,353,0,0" VerticalAlignment="Top"/>
+        <ListView x:Name="lvwGatway" HorizontalAlignment="Left" Height="60" Margin="10,378,0,0" VerticalAlignment="Top" Width="537" SelectionMode="Extended">
+            <ListView.ItemContainerStyle>
+                <Style TargetType="{x:Type ListViewItem}">
+                    <Style.Triggers>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter Property="Background" Value="{x:Null}" />
+                            <Setter Property="BorderBrush" Value="{x:Null}" />
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </ListView.ItemContainerStyle>
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="IPv4 address" Width="90" DisplayMemberBinding="{Binding IP}"/>
+                    <GridViewColumn Header="MAC" Width="105" DisplayMemberBinding="{Binding MAC}"/>
+                    <GridViewColumn Header="Vendor (OUI)" Width="200" DisplayMemberBinding="{Binding Vendor}"/>
+                </GridView>
+            </ListView.View>
+        </ListView>
+
+    </Grid>
+</Window>
