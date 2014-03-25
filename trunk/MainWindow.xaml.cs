@@ -259,10 +259,9 @@ namespace DipW
 
         private void btnToggleArpPoisoning_Click(object sender, RoutedEventArgs e)
         {
-            CheckInitArpPoison();
-
             try
             {
+                CheckInitArpPoison();
                 if (_arpPoisoner.BgWorker.IsBusy)
                 {
                     gbxArpPoisoning.BorderBrush = _cancelingBrush;
@@ -293,9 +292,9 @@ namespace DipW
 
         private void btnAddDnsSpoofingEntry_Click(object sender, RoutedEventArgs e)
         {
-            CheckInitArpPoison();
             try
             {
+                CheckInitArpPoison();
                 _arpPoisoner.DnsSpoofingList.Add(new DnsSpoofingEntry(tbxAddDnsSpoofingEntryName.Text, tbxAddDnsSpoofingEntryAddress.Text));
                 tbxAddDnsSpoofingEntryName.Text = "";
             }
