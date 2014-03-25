@@ -42,7 +42,7 @@ namespace DipW
         private ARPListener _arpListener;
 
         private ARPSender _arpSender;
-        private ArpPoisoning _arpSpoofSender;
+        private ArpPoisoner _arpPoisoner;
         private CAMOverflowSender _camOverflowSender;
 
 
@@ -70,7 +70,7 @@ namespace DipW
         {
             _currentDeviceIndex = cbxNetworkInterface.SelectedIndex;
             StartPacketCounting();
-            _arpSpoofSender = null;
+            _arpPoisoner = null;
         }
 
         private void getDevices()
@@ -103,6 +103,8 @@ namespace DipW
             cbxNetworkInterface.SelectedIndex = 0;
             StartPacketCounting();
         }
+
+        #region PacketStatistics
 
         private void StartPacketCounting()
         {
@@ -160,6 +162,8 @@ namespace DipW
             }));
         }
 
+        #endregion
+
         private void btnStartScan_Click(object sender, RoutedEventArgs e)
         {
             _arpListener = new ARPListener(getCurrentDevice());
@@ -199,24 +203,19 @@ namespace DipW
             {
                 MessageBox.Show(ex.Message);
             }
-
-            //_camOverflowSender.FloodSwitch(500000);
-            //_arpSpoofSender = new ArpSpoofSender(getCurrentDevice(), _arpListener.Gateways[0]);
-            //_arpSpoofSender.addTarget((Target)lvwTargets.SelectedItem);
-            //_forwarder = new Forwarder(getCurrentDevice(), new MacAddress("CC:35:40:2C:CC:6F"));
         }
 
         private void lvwTargets_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (lvwTargets.SelectedItems.Count > 0)
             {
-                btnAddARPTarget.IsEnabled = true;
-                btnRemoveARPTarget.IsEnabled = true;
+                btnAddArpTarget.IsEnabled = true;
+                btnRemoveArpTarget.IsEnabled = true;
             }
             else
             {
-                btnAddARPTarget.IsEnabled = false;
-                btnRemoveARPTarget.IsEnabled = false;
+                btnAddArpTarget.IsEnabled = false;
+                btnRemoveArpTarget.IsEnabled = false;
             }
         }
 
@@ -224,53 +223,56 @@ namespace DipW
 
         private void CheckInitArpPoison()
         {
-            if (_arpSpoofSender == null)
+            if (_arpPoisoner == null)
             {
-                _arpSpoofSender = new ArpPoisoning(getCurrentDevice(), (Target)lvwGatway.Items[0]);
-                _arpSpoofSender.BgWorker.RunWorkerCompleted += new RunWorkerCompletedEventHandler(delegate
+                _arpPoisoner = new ArpPoisoner(getCurrentDevice(), (Target)lvwGatway.Items[0]);
+                lvwDnsSpoofingList.ItemsSource = _arpPoisoner.DnsSpoofingList;
+                _arpPoisoner.BgWorker.RunWorkerCompleted += new RunWorkerCompletedEventHandler(delegate
                 {
-                    btnARPpoison.IsEnabled = true;
-                    gbxARPPoison.BorderBrush = _defaultBrush;
+                    btnToggleArpPoisoning.IsEnabled = true;
+                    btnToggleArpPoisoning.Content = "Activate";
+                    gbxArpPoisoning.BorderBrush = _defaultBrush;
                 });
             }
         }
 
-        private void btnAddARPTarget_Click(object sender, RoutedEventArgs e)
+        private void btnAddArpTarget_Click(object sender, RoutedEventArgs e)
         {
             CheckInitArpPoison();
             foreach (Target element in lvwTargets.SelectedItems)
             {
-                _arpSpoofSender.AddTarget(element);
+                _arpPoisoner.AddTarget(element);
                 element.ArpPoisoning = true;
             }
         }
 
-        private void btnRemoveARPTarget_Click(object sender, RoutedEventArgs e)
+        private void btnRemoveArpTarget_Click(object sender, RoutedEventArgs e)
         {
             CheckInitArpPoison();
             foreach (Target element in lvwTargets.SelectedItems)
             {
-                _arpSpoofSender.RemoveTarget(element);
+                _arpPoisoner.RemoveTarget(element);
                 element.ArpPoisoning = false;
             }
         }
 
-        private void btnARPpoison_Click(object sender, RoutedEventArgs e)
+        private void btnToggleArpPoisoning_Click(object sender, RoutedEventArgs e)
         {
             CheckInitArpPoison();
 
             try
             {
-                if (_arpSpoofSender.BgWorker.IsBusy)
+                if (_arpPoisoner.BgWorker.IsBusy)
                 {
-                    gbxARPPoison.BorderBrush = _cancelingBrush;
-                    btnARPpoison.IsEnabled = false;
-                    _arpSpoofSender.BgWorker.CancelAsync();
+                    gbxArpPoisoning.BorderBrush = _cancelingBrush;
+                    btnToggleArpPoisoning.IsEnabled = false;
+                    _arpPoisoner.BgWorker.CancelAsync();
                 }
                 else
                 {
-                    gbxARPPoison.BorderBrush = _activeBrush;
-                    _arpSpoofSender.StartSpoofing();
+                    gbxArpPoisoning.BorderBrush = _activeBrush;
+                    _arpPoisoner.StartSpoofing();
+                    btnToggleArpPoisoning.Content = "Deactivate";
                 }
             }
             catch (Exception ex)
@@ -278,6 +280,24 @@ namespace DipW
                 MessageBox.Show(ex.Message);
             }
         }
+
+        #region DNS_Spoofing
+        //delete item from list
+        void DeleteRow(object sender, RoutedEventArgs e)
+        {
+            var local = (sender as Button).Tag as DnsSpoofingEntry;
+            _arpPoisoner.DnsSpoofingList.Remove(local);
+        }
+       
+
+        private void btnAddDnsSpoofingEntry_Click(object sender, RoutedEventArgs e)
+        {
+            CheckInitArpPoison();
+            _arpPoisoner.DnsSpoofingList.Add(new DnsSpoofingEntry(tbxAddDnsSpoofingEntryName.Text, tbxAddDnsSpoofingEntryAddress.Text));
+            tbxAddDnsSpoofingEntryName.Text = "";
+        }
+        #endregion
+
         #endregion
 
     }
