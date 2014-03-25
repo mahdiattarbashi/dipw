@@ -233,6 +233,7 @@ namespace DipW
                     btnToggleArpPoisoning.Content = "Activate";
                     gbxArpPoisoning.BorderBrush = _defaultBrush;
                 });
+
             }
         }
 
@@ -288,13 +289,20 @@ namespace DipW
             var local = (sender as Button).Tag as DnsSpoofingEntry;
             _arpPoisoner.DnsSpoofingList.Remove(local);
         }
-       
+
 
         private void btnAddDnsSpoofingEntry_Click(object sender, RoutedEventArgs e)
         {
             CheckInitArpPoison();
-            _arpPoisoner.DnsSpoofingList.Add(new DnsSpoofingEntry(tbxAddDnsSpoofingEntryName.Text, tbxAddDnsSpoofingEntryAddress.Text));
-            tbxAddDnsSpoofingEntryName.Text = "";
+            try
+            {
+                _arpPoisoner.DnsSpoofingList.Add(new DnsSpoofingEntry(tbxAddDnsSpoofingEntryName.Text, tbxAddDnsSpoofingEntryAddress.Text));
+                tbxAddDnsSpoofingEntryName.Text = "";
+            }
+            catch (Exception Ex)
+            {
+                MessageBox.Show(Ex.Message);
+            }
         }
         #endregion
 
