@@ -144,6 +144,7 @@ namespace DipW.Classes.Manipulators.Senders
                         throw new Exception("Cannot send the requested amount of packets in " + _timePerRun + " milliseconds");
                     else
                     {
+                        //waiting loop, check for a possible pending cancelation
                         for (int i = 0; i < 100; i++)
                         {
                             if (_bgWorker.CancellationPending)
