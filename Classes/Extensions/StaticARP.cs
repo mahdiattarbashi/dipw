@@ -50,7 +50,8 @@ namespace DipW.Classes.Extensions
             if (system.Version.Major > 5)
             {
                 if (operation == StaticARPOperation.Add)
-                    p.StartInfo.Arguments = "/k netsh interface ip delete neighbors \"" + InterfaceName + "\" " + IP + " && netsh interface ip add neighbors \"" + InterfaceName + "\" " + IP + " " + macString + " && exit";
+                    p.StartInfo.Arguments = "/k netsh interface ip delete neighbors \"" + InterfaceName + "\" " + IP + 
+                        " && netsh interface ip add neighbors \"" + InterfaceName + "\" " + IP + " " + macString + " && exit";
                 else
                     p.StartInfo.Arguments = "/k netsh interface ip delete neighbors \"" + InterfaceName + "\" " + IP + " && exit";
 

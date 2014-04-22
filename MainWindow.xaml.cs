@@ -43,6 +43,7 @@ namespace DipW
 
         private ARPSender _arpSender;
         private ArpPoisoner _arpPoisoner;
+        private ArpDosSender _arpDoser;
         private CAMOverflowSender _camOverflowSender;
 
 
@@ -211,15 +212,19 @@ namespace DipW
             {
                 btnAddArpTarget.IsEnabled = true;
                 btnRemoveArpTarget.IsEnabled = true;
+                btnAddArpDosTarget.IsEnabled = true;
+                btnRemoveArpDosTarget.IsEnabled = true;
             }
             else
             {
                 btnAddArpTarget.IsEnabled = false;
                 btnRemoveArpTarget.IsEnabled = false;
+                btnAddArpDosTarget.IsEnabled = true;
+                btnRemoveArpDosTarget.IsEnabled = true;
             }
         }
 
-        #region ARP_Poisoning
+        #region ARP_Poisoning/ARP_Dos
 
         private void CheckInitArpPoison()
         {
@@ -233,7 +238,6 @@ namespace DipW
                     btnToggleArpPoisoning.Content = "Activate";
                     gbxArpPoisoning.BorderBrush = _defaultBrush;
                 });
-
             }
         }
 
@@ -304,6 +308,67 @@ namespace DipW
             }
         }
         #endregion
+
+        #endregion
+
+        #region ARP_Dos
+        private void CheckInitArpDos()
+        {
+            if (_arpDoser == null)
+            {
+                _arpDoser = new ArpDosSender(getCurrentDevice(), (Target)lvwGatway.Items[0]);
+                _arpDoser.BgWorker.RunWorkerCompleted += new RunWorkerCompletedEventHandler(delegate
+                {
+                    btnToggleArpDos.IsEnabled = true;
+                    btnToggleArpDos.Content = "Activate";
+                    gbxArpDos.BorderBrush = _defaultBrush;
+                });
+            }
+        }
+
+        private void btnAddArpDosTarget_Click(object sender, RoutedEventArgs e)
+        {
+            CheckInitArpDos();
+            foreach (Target element in lvwTargets.SelectedItems)
+            {
+                _arpDoser.AddTarget(element);
+                element.ArpDos = true;
+            }
+        }
+
+        private void btnRemoveArpDosTarget_Click(object sender, RoutedEventArgs e)
+        {
+            CheckInitArpDos();
+            foreach (Target element in lvwTargets.SelectedItems)
+            {
+                _arpDoser.RemoveTarget(element);
+                element.ArpDos = false;
+            }
+        }
+
+        private void btnToggleArpDos_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                CheckInitArpDos();
+                if (_arpDoser.BgWorker.IsBusy)
+                {
+                    gbxArpDos.BorderBrush = _cancelingBrush;
+                    btnToggleArpDos.IsEnabled = false;
+                    _arpDoser.BgWorker.CancelAsync();
+                }
+                else
+                {
+                    gbxArpDos.BorderBrush = _activeBrush;
+                    _arpDoser.StartSpoofing();
+                    btnToggleArpDos.Content = "Deactivate";
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
 
         #endregion
 

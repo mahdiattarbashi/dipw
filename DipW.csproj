@@ -101,6 +101,7 @@
     <Compile Include="Classes\Components\Target.cs" />
     <Compile Include="Classes\Components\TargetList.cs" />
     <Compile Include="Classes\Components\Enums.cs" />
+    <Compile Include="Classes\Manipulators\Senders\ArpDosSender.cs" />
     <Compile Include="Classes\Manipulators\Senders\ARPSender.cs" />
     <Compile Include="Classes\Manipulators\ArpPoisoner.cs" />
     <Compile Include="Classes\Manipulators\Senders\CAMOverflowSender.cs" />
