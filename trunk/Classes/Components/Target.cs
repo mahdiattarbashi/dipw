@@ -20,6 +20,7 @@ namespace DipW.Classes.Components
         public string Vendor { get; set; }
 
         private bool _arpPoisoning;
+        private bool _arpDos;
 
         public Target()
         {
@@ -35,6 +36,16 @@ namespace DipW.Classes.Components
             {
                 _arpPoisoning = value;
                 OnPropertyChanged("ArpPoisoning");
+            }
+        }
+
+        public bool ArpDos
+        {
+            get { return _arpDos; }
+            set
+            {
+                _arpDos = value;
+                OnPropertyChanged("ArpDos");
             }
         }
 

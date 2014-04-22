@@ -41,11 +41,18 @@
             </TabItem>
             <TabItem Header="DoS-Tools">
                 <Grid>
-                    <GroupBox x:Name="gbxCAMflood" Header="CAM-Overflow" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Height="130" Width="254">
+                    <GroupBox x:Name="gbxCAMflood" Header="CAM-Overflow" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Height="110" Width="254">
                         <Grid>
                             <Label Content="Entries:" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" ToolTip="The amount of MAC/IP addresses to be generated to fill the CAM-Table. Must be bigger than the CAM-Table of the switch"/>
                             <Button x:Name="btnCAMflood" Content="Flood" HorizontalAlignment="Left" Margin="157,58,0,0" VerticalAlignment="Top" Width="75" Click="btnCAMflood_Click"/>
                             <TextBox x:Name="tbxCAMentries" HorizontalAlignment="Left" Height="23" Margin="63,12,0,0" TextWrapping="Wrap" Text="7000" VerticalAlignment="Top" Width="120"/>
+                        </Grid>
+                    </GroupBox>
+                    <GroupBox x:Name="gbxArpDos" Header="Arp-Dos" HorizontalAlignment="Left" Margin="10,125,0,0" VerticalAlignment="Top" Height="112" Width="254">
+                        <Grid>
+                            <Button x:Name="btnAddArpDosTarget" IsEnabled="False" Content="Add Target" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="92" Click="btnAddArpDosTarget_Click"/>
+                            <Button x:Name="btnRemoveArpDosTarget" IsEnabled="false" Content="Remove Target" HorizontalAlignment="Left" Margin="134,10,0,0" VerticalAlignment="Top" Width="98" Click="btnRemoveArpDosTarget_Click"/>
+                            <Button x:Name="btnToggleArpDos" Content="Activate" HorizontalAlignment="Left" Margin="134,59,0,0" VerticalAlignment="Top" Width="98" Click="btnToggleArpDos_Click"/>
                         </Grid>
                     </GroupBox>
                 </Grid>
@@ -55,7 +62,7 @@
                     <GroupBox x:Name="gbxArpPoisoning" Header="ARP-Poisoning" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Height="290" Width="254">
                         <Grid>
                             <Button x:Name="btnAddArpTarget" IsEnabled="False" Content="Add Target" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="92" Click="btnAddArpTarget_Click"/>
-                            <Button x:Name="btnRemoveArpTarget" IsEnabled="false" Content="Remove Target" HorizontalAlignment="Left" Margin="134,10,0,0" VerticalAlignment="Top" Width="92" Click="btnRemoveArpTarget_Click"/>
+                            <Button x:Name="btnRemoveArpTarget" IsEnabled="false" Content="Remove Target" HorizontalAlignment="Left" Margin="134,10,0,0" VerticalAlignment="Top" Width="98" Click="btnRemoveArpTarget_Click"/>
                             <Button x:Name="btnToggleArpPoisoning" Content="Activate" HorizontalAlignment="Left" Margin="134,237,0,0" VerticalAlignment="Top" Width="98" Click="btnToggleArpPoisoning_Click"/>
                             <ListView x:Name="lvwDnsSpoofingList" Grid.Row="0" FontSize="10.667" Height="110" VerticalAlignment="Top" SelectionMode="Single" Margin="0,72,0,0">
                                 <ListView.View>
@@ -85,9 +92,10 @@
             <ListView.View>
                 <GridView>
                     <GridViewColumn Header="IPv4 address" Width="90" DisplayMemberBinding="{Binding IP}"/>
-                    <GridViewColumn Header="MAC" Width="105" DisplayMemberBinding="{Binding MAC}"/>
-                    <GridViewColumn Header="Vendor (OUI)" Width="200" DisplayMemberBinding="{Binding Vendor}"/>
+                    <GridViewColumn Header="MAC" Width="110" DisplayMemberBinding="{Binding MAC}"/>
+                    <GridViewColumn Header="Vendor (OUI)" Width="150" DisplayMemberBinding="{Binding Vendor}"/>
                     <GridViewColumn Header="ARP-P." Width="100" DisplayMemberBinding="{Binding ArpPoisoning}"/>
+                    <GridViewColumn Header="ARP-D." Width="100" DisplayMemberBinding="{Binding ArpDos}"/>
                 </GridView>
             </ListView.View>
         </ListView>
@@ -107,7 +115,7 @@
             <ListView.View>
                 <GridView>
                     <GridViewColumn Header="IPv4 address" Width="90" DisplayMemberBinding="{Binding IP}"/>
-                    <GridViewColumn Header="MAC" Width="105" DisplayMemberBinding="{Binding MAC}"/>
+                    <GridViewColumn Header="MAC" Width="110" DisplayMemberBinding="{Binding MAC}"/>
                     <GridViewColumn Header="Vendor (OUI)" Width="200" DisplayMemberBinding="{Binding Vendor}"/>
                 </GridView>
             </ListView.View>
